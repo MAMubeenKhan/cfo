@@ -122,3 +122,6 @@ Red strings were grey and 1px in the recording because React Flow's own edge sty
 
 ## 2026-09-25 15:52 - Video published, demo cases hidden
 YouTube (Unlisted): https://youtu.be/xEti2uTE5eA, embedded in submission/SUBMISSION.md. The demo cases CFO-2026-0041 and 0042 (both CLASSIFIED) were set hidden=true; both now return 404 publicly and the public count is the 30 seeded cases. Still to do: commit/push, make the repo public, agent-session upload, publish the DEV post.
+
+## 2026-09-25 15:58 - Committed, pushed, repo public
+Secrets check before commit: pattern scan (only package-lock hashes and the plan text matched, scanner self-tested), and an exact-value scan of every env value across all files and the full git history (0 hits for the Sanity and Vercel tokens). Commit e881f7d pushed; MAMubeenKhan/cfo switched to public and confirmed by an anonymous request (repo page and raw cover.png both 200).
