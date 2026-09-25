@@ -12,7 +12,7 @@ Built for the DEV × Sanity challenge, Path Two ("Vibe-Code Something Strange"),
 | Studio | Sanity Studio v6 with a custom desk, map input and the official Workflows plugin (`studio/`) |
 | Case Board | A custom app on the **Sanity App SDK**: a live corkboard with red strings (`caseboard/`) |
 | Process | **Sanity Workflows**: `case-lifecycle`, five stages, agent and human use the same transitions (`workflow/`) |
-| Automation | **Sanity Functions** drain the workflow's effects when a report arrives (`functions/`) |
+| Automation | **Sanity Functions**: one drains the workflow's effects when a report arrives, a daily **Scheduled Function** repairs stale claims (`functions/`) |
 | AI | Sanity **Agent Actions** (fallback: the Anthropic API) |
 | Sanity project | `cyh4xyo1`, dataset `production` (public) |
 
@@ -81,7 +81,7 @@ Useful commands: `npm run wf:recover` (start missing instances and settle open o
 
 * **Sanity Workflows is early access (0.x).** All `@sanity/workflow-*` packages are pinned to exactly `0.35.0`.
 * The rate limiter is in-memory, so it bounds abuse per server instance, not globally. The hard cap on cost is the daily AI budget.
-* The daily recovery sweeper was dropped: Scheduled Functions need an organisation-scoped stack. `npm run wf:recover` does the same job on demand.
+* The daily recovery sweeper (`wf-sweep`, 04:00 UTC) needs an organisation-scoped Blueprints stack, which a project API token cannot create; it was created with an organisation owner's own login. `npm run wf:recover` does the same job on demand.
 * The Case Board and Studio need a Sanity login. The public site has no login, and the Director's Desk gives visitors the same workflow power.
 
 See `CREDITS.md` for attributions.

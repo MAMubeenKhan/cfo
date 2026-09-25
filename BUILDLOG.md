@@ -88,3 +88,8 @@ Ran against the DEPLOYED stack with Playwright + axe + Lighthouse (scratch scrip
 
 ## 2026-09-25 11:13 — Token rotated
 - The Sanity token that leaked into the session transcript early on was replaced by a new editor robot token (CFO_Editor). Verified: old token 401, new token works; local env files, Vercel and the private repo updated; live report filing re-tested end to end with the new token (filed and triaged in ~40 s). The workflow Function uses its own separate robot token (wf-runtime), which never appeared in the transcript.
+
+## 2026-09-25 11:29 — Daily sweeper restored
+- With Mubeen's own Sanity CLI login (not the robot token) created an ORGANISATION-scoped stack (production-org, ST-5f3vreevtx), moved both Functions onto it (wf-drain plus the restored wf-sweep, daily at 04:00 UTC) and destroyed the old project-level stack ST-2w3ercn64w so reports are not drained twice. Verified: a live report processed by the new stack alone (filed, triaged, routed in ~35 s; wf-drain logged its invocations) and npm run wf:recover (same logic as the sweeper) settled all 11 open instances without errors.
+- Gotcha: after 'blueprints init --organization-id' the config kept both projectId and organizationId and every command looked in the PROJECT scope (stack "not found", 404). Deleting projectId from .sanity/blueprint.config.json fixed it. The sweeper itself has not run on its schedule yet; check 'sanity functions logs wf-sweep' after 04:00 UTC.
+- The robot token used by this project's own scripts and the site is editor-only (CFO_Editor); infrastructure commands (blueprints, workflow deploy, Studio deploy) use Mubeen's login, which stays active on this machine.

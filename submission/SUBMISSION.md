@@ -74,7 +74,7 @@ Before writing code I asked for *"an end to end plan so a new session doesn't ha
 * **Content model:** 8 document types (case, subject, region, witness, connection, board pin, settings, counter) and 5 object types. Typed evidence union (photo, footprint, sound, testimony), geopoints, references, and a first-class `connection` document with provenance and confidence: the red strings. Witnesses are anonymous codenames with a credibility score computed across their cases.
 * **Studio customisation:** status-queue desk structure, category and restricted-site lists, badges (status, plausibility P0-100, hidden), delete removed for cases (it would orphan their workflow instance), and a **MapLibre location picker** replacing the default geopoint input (which needs a Google Maps key).
 * **Workflows (0.35, early access):** the `case-lifecycle` definition: five stages, five automated effects, human actions for the Director and Investigator. It passed `sanity-workflows deploy --check` on the first attempt. I then ran all 30 seeded cases through the *real engine* using the same actions a person fires, and asserted the stage histogram matched the plan exactly.
-* **Functions:** a document Function fires when a workflow instance gains unclaimed effects and runs the AI handlers in Sanity's cloud.
+* **Functions:** a document Function fires when a workflow instance gains unclaimed effects and runs the AI handlers in Sanity's cloud, and a daily Scheduled Function sweeps stale claims and re-evaluates open cases.
 * **Agent Actions:** the Field Investigator and the Cross-Referencer both call `client.agent.action.prompt`.
 * **App SDK:** the Case Board (`useQuery` streams, `useWorkflowEngine`, `useWorkflowSession`, `@sanity/workflow-diagram`).
 
@@ -85,7 +85,7 @@ I would rather show the dead ends than pretend there were none.
 * **A big Bash command silently applied nothing** (twice): long heredocs containing an apostrophe failed with "unexpected EOF". The lesson, saved to memory: write files with the file tool, one call per file.
 * **Half-installed packages:** an interrupted `npm install` left a half-extracted `zod`, which made every Sanity CLI command fail with `MODULE_NOT_FOUND`, then made a second install fail with `Invalid Version:`. Fix: delete `node_modules` and the lockfile, install fresh, in the background. On this network installs took 10 to 25 minutes.
 * **The skill corrected the plan.** I installed Sanity's `sanity-best-practices` skill and it caught that `@sanity/icons` v5 has *no root exports* (every icon imports from its own path). My draft compiled and would have failed at bundle time.
-* **Permissions:** my API token could deploy the Studio and Functions but not an App SDK app (missing an organisation-level grant) and could not create the organisation stack that Scheduled Functions need. I dropped the daily backup job and wrote a repair command instead of working around it, and deployed the Case Board from my own login.
+* **Permissions:** my API token could deploy the Studio and Functions but not an App SDK app (missing an organisation-level grant) and could not create the organisation stack that Scheduled Functions need. I did not work around it: I shipped without the daily backup job and wrote a repair command instead, deployed the Case Board from my own login, and later, once I was logged in, created the organisation stack, moved both Functions onto it and retired the old one.
 * **Vercel served 404 for everything:** the CLI created the project with no framework preset, so the build passed but the edge served nothing. One API call to set `framework: nextjs` and a redeploy fixed it. Deployment Protection was also putting a login in front of the site.
 * **The AI was too harsh.** In the live test, a credible sighting *with a photo and a footprint* scored 68, just under the 70 "investigate" bar. I added a scoring guide to the prompt ("a submitted photo or footprint counts as physical evidence"; "vague is not false: when in doubt, score 20-49 so a person can look") and redeployed. The same report then opened an investigation, and the Cross-Referencer proposed 3 real related files.
 * **Things the live test found** that no type-checker would have: a missing case returned HTTP 200 (a soft 404) because of a page-wide loading skeleton; the map threw "Worker failed to load" because MapLibre 6's worker files can't be bundled by Next; the map opened on Scotland instead of framing all cases; my evidence photos were bad at first sight (a footprint that looked like a snowman, a triangle invisible on a dark sky), which I only caught by *looking* at them.
@@ -98,7 +98,6 @@ I would rather show the dead ends than pretend there were none.
 
 ### What is honestly not there
 
-* The daily recovery sweeper (see above). `npm run wf:recover` does the same job on demand.
 * The in-memory rate limiter bounds abuse per server instance, not globally. The hard cap on cost is a daily AI budget and a kill switch in `Bureau settings`.
 * The Case Board is desktop-only, by design.
 

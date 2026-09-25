@@ -1,4 +1,4 @@
-import {defineBlueprint, defineDocumentFunction, defineRobotToken} from '@sanity/blueprints'
+import {defineBlueprint, defineDocumentFunction, defineRobotToken, defineScheduledFunction} from '@sanity/blueprints'
 
 const projectId = process.env.SANITY_PROJECT_ID ?? 'cyh4xyo1'
 const dataset = process.env.SANITY_DATASET ?? 'production'
@@ -34,7 +34,16 @@ export default defineBlueprint({
       },
     }),
 
-    // A daily sweeper (stale claims, re-tick) was dropped: Scheduled Functions need an organisation-scoped stack
-    // and this project's token cannot create one. `npm run wf:recover` does the same job on demand.
+    // Safety net: once a day, release stale effect claims and re-evaluate open instances.
+    // Scheduled Functions need an organisation-scoped stack (this one is) and run daily on the Free plan.
+    // `npm run wf:recover` does the same job on demand.
+    defineScheduledFunction({
+      name: 'wf-sweep',
+      src: './functions/wf-sweep',
+      robotToken,
+      timeout: 120,
+      event: {expression: '0 4 * * *'},
+      env: {SANITY_PROJECT_ID: projectId, SANITY_DATASET: dataset, WORKFLOW_TAG: 'prod'},
+    }),
   ],
 })
