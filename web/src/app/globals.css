@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+/* Dark mode is class-based (next-themes), not media-query-only, so the toggle always wins. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ tokens
+   "Declassified dossier": paper, ink, stamps and red string. Every text/background
+   pair below is checked to WCAG 2.2 AA (4.5:1 body, 3:1 large text and UI). */
+:root {
+  --paper: #f4eee1;
+  --paper-2: #eae1cc;
+  --paper-3: #e0d5ba;
+  --ink: #1c1b19;
+  --ink-muted: #5b574f;
+  --rule: #cfc4ac;
+  --accent: #1d4e89; /* focus ring and links */
+  --intake: #5b574f;
+  --review: #1d4e89;
+  --investigation: #8a5a00;
+  --classified: #1f6f43;
+  --debunked: #b42318; /* also the red string */
+  --inconclusive: #4a5563;
+  --on-solid: #f4eee1;
+  --shadow-paper: 0 1px 0 rgb(28 27 25 / 0.05), 0 8px 24px -12px rgb(60 45 20 / 0.28);
+  --noise-opacity: 0.045;
+  color-scheme: light;
+}
+
+.dark {
+  --paper: #111315;
+  --paper-2: #1a1d20;
+  --paper-3: #23272b;
+  --ink: #ece6d8;
+  --ink-muted: #a8a195;
+  --rule: #2c3034;
+  --accent: #7eb0f0;
+  --intake: #a8a195;
+  --review: #7eb0f0;
+  --investigation: #e0a640;
+  --classified: #5cc98a;
+  --debunked: #f0645a;
+  --inconclusive: #9aa5b4;
+  --on-solid: #111315;
+  --shadow-paper: 0 1px 0 rgb(0 0 0 / 0.4), 0 10px 28px -14px rgb(0 0 0 / 0.7);
+  --noise-opacity: 0.06;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-intake: var(--intake);
+  --color-review: var(--review);
+  --color-investigation: var(--investigation);
+  --color-classified: var(--classified);
+  --color-debunked: var(--debunked);
+  --color-inconclusive: var(--inconclusive);
+  --color-on-solid: var(--on-solid);
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius-paper: 4px;
+  --radius-sheet: 10px;
+  --shadow-paper: var(--shadow-paper);
+}
+
+/* ------------------------------------------------------------------- base */
+html {
+  background: var(--paper);
+  color: var(--ink);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+p { text-wrap: pretty; }
+
+::selection { background: color-mix(in srgb, var(--debunked) 28%, transparent); }
+
+/* ------------------------------------------------------------- focus + a11y */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-paper);
+  font-weight: 600;
+  transition: top 0.15s ease;
+}
+.skip-link:focus-visible { top: 1rem; }
+
+.sr-only-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* ----------------------------------------------------------- reusable pieces */
+.mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.paper-card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-paper);
+  box-shadow: var(--shadow-paper);
+}
+
+/* Ink stamp: mono, bold, tilted, with a rough edge from an SVG displacement filter (defined once in the layout). */
+.stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--stamp-size, 0.95rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.42em 0.7em 0.36em;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  transform: rotate(-5deg);
+  filter: url(#ink-edge);
+  mix-blend-mode: multiply;
+  opacity: 0.92;
+  white-space: nowrap;
+}
+.dark .stamp { mix-blend-mode: screen; opacity: 0.95; }
+
+/* Redaction: a black bar that reveals on hover or keyboard focus. */
+.redaction {
+  background: var(--ink);
+  color: transparent;
+  border-radius: 2px;
+  padding: 0 0.15em;
+  cursor: help;
+  transition: background 0.18s ease, color 0.18s ease;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.redaction:hover, .redaction:focus-visible, .redaction[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+}
+
+/* Typewriter case-file rule */
+.rule-dashed { border-top: 1px dashed var(--rule); }
+
+/* Red string: an animated dashed stroke used on connections */
+@keyframes draw-string { from { stroke-dashoffset: var(--len, 400); } to { stroke-dashoffset: 0; } }
+.string-draw { stroke-dasharray: var(--len, 400); animation: draw-string 1.1s ease-out forwards; }
+
+@keyframes ticker-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.ticker-in { animation: ticker-in 0.4s ease-out both; }
+
+@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.pulse-soft { animation: pulse-soft 1.6s ease-in-out infinite; }
+
+/* MapLibre popups and controls follow the theme */
+.maplibregl-popup-content {
+  background: var(--paper-2) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-paper) !important;
+  box-shadow: var(--shadow-paper) !important;
+  font-family: var(--font-sans);
+  padding: 0.75rem 0.9rem !important;
+}
+.maplibregl-popup-tip { display: none; }
+.maplibregl-ctrl-group { background: var(--paper-2) !important; border: 1px solid var(--rule); box-shadow: none !important; }
+.maplibregl-ctrl button .maplibregl-ctrl-icon { filter: none; }
+.dark .maplibregl-ctrl button .maplibregl-ctrl-icon { filter: invert(1); }
+
+
+/* MapLibre tiles have no dark style here, so the map canvas is inverted in dark mode. Markers are DOM, so they are unaffected. */
+.dark .cfo-map .maplibregl-canvas { filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.92) saturate(0.85); }
+.cfo-map .maplibregl-map { font-family: var(--font-sans); }
+
+/* --------------------------------------------------------------- user prefs */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .stamp { transform: rotate(-5deg); }
+}
+
+@media (forced-colors: active) {
+  body { background-image: none; }
+  .stamp { filter: none; border-color: CanvasText; }
+  .redaction { background: CanvasText; forced-color-adjust: none; }
+}
+
+@media print {
+  body { background: white; background-image: none; color: black; }
+  .no-print { display: none !important; }
+}
