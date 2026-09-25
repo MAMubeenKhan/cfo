@@ -37,7 +37,7 @@ The Studio and Case Board need a Sanity login, so the video and screenshots belo
 
 {% embed https://youtu.be/xEti2uTE5eA %}
 
-The video shows the whole loop: a public report, live AI triage, the Director's Desk, then the Case Board and the Studio, which need a Sanity login and so are only shown here.
+The video shows the whole loop, from a public report to a stamp, and it is the only place to see the Case Board and Studio without a Sanity login.
 
 ![The home page](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-1-home.png)
 ![A report, triaged by the Field Investigator](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-2-report-triaged.png)
@@ -95,6 +95,7 @@ I would rather show the dead ends than pretend there were none.
 * **Things the live test found** that no type-checker would have: a missing case returned HTTP 200 (a soft 404) because of a page-wide loading skeleton; the map threw "Worker failed to load" because MapLibre 6's worker files can't be bundled by Next; the map opened on Scotland instead of framing all cases; my evidence photos were bad at first sight (a footprint that looked like a snowman, a triangle invisible on a dark sky), which I only caught by *looking* at them.
 * **My first rate limiter was useless, and only a live test showed it.** I had built it in server memory and even documented it as a known limit. Then I filed eight reports at once from one connection with the limit set to five: all eight went through, because serverless hosting spreads requests over many servers. I rebuilt it as counters stored in Sanity as private documents (an id with a dot in it is unreadable to the public). The same test then accepted five and refused three, and an anonymous query for those counters returns nothing.
 * **Vercel blocked a deployment** once I started committing to git: the CLI attached my commit author, which was not on the Vercel team. Deploying from a copy of the folder without git history fixes it (`scripts/deploy-web.sh`).
+* **Recording the demo video found three more bugs.** Watching my own screen recording, the red strings on the Case Board were grey and hair-thin: React Flow's stylesheet loads later and beat mine, so I raised the selector's specificity. The Studio's map input was blank: MapLibre 6 needs a worker URL in every host, not only the Next site, so I serve the worker from the Studio's `static` folder. And demo cases I had hidden were still appearing as "related files" on public pages, so the query now drops a connection if either end is hidden.
 * **Speed:** the case page scored 57 on a throttled phone because a 290 KB map library loaded below the fold. Mounting the map only when it scrolls into view took it to 93. Accessibility is 100 on every page; the search-engine score stays near 66 only because Vercel adds a `noindex` header to its free addresses.
 
 ### The App SDK and Workflows, honestly
@@ -106,6 +107,8 @@ I would rather show the dead ends than pretend there were none.
 
 * No CAPTCHA. Abuse is limited by a durable rate limit (5 reports an hour per visitor, 40 overall), a honeypot, a minimum fill time, and a daily AI budget with a kill switch in `Bureau settings`.
 * The Case Board is desktop-only, by design.
+* **Not tested:** two people using the Case Board at the same moment (the live sync is Sanity's, and I only tried it alone); a real screen reader (I ran axe-core, which scored 100, and did a keyboard-only pass, but I did not listen to it); and the daily sweeper's first scheduled run, which was due after I wrote this.
+* **The AI can be wrong.** Code, not the model, picks the route, but a very low score (under 20) still auto-debunks an ordinary case. The safety net is narrower than "a person sees everything": faith, distress and coercion flags always force human review, and every automated step is written to the case's audit log so a person can find and reverse it.
 
 ## Sanity Project Details
 
@@ -117,5 +120,3 @@ I would rather show the dead ends than pretend there were none.
 ## Agent Session
 
 **[AGENT SESSION EMBED: upload the transcript at https://dev.to/agent_sessions/new, curate the best slices, click Make Public, then embed it here]**
-
-Good slices to keep: the idea comparison and the "won't this make me a joke?" answer; the faith-sensitivity design decision; the Workflows definition passing validation first time; the live test that found the too-harsh AI score; and the speed pass.
