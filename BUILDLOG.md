@@ -125,3 +125,7 @@ YouTube (Unlisted): https://youtu.be/xEti2uTE5eA, embedded in submission/SUBMISS
 
 ## 2026-09-25 15:58 - Committed, pushed, repo public
 Secrets check before commit: pattern scan (only package-lock hashes and the plan text matched, scanner self-tested), and an exact-value scan of every env value across all files and the full git history (0 hits for the Sanity and Vercel tokens). Commit e881f7d pushed; MAMubeenKhan/cfo switched to public and confirmed by an anonymous request (repo page and raw cover.png both 200).
+
+## 2026-09-25 16:37 - Submission published
+DEV post live (logged-out check: 200, published, tags devchallenge/sanitychallenge/sanity/ai, cover set, YouTube embed and agent-session embed present, no placeholders): https://dev.to/mamubeenkhan/the-cryptid-field-office-an-ai-triages-sightings-a-person-signs-off-57go
+Repo public, live site 200, video Unlisted (https://youtu.be/xEti2uTE5eA). Agent session: curated highlights (38 messages) built from the scrubbed transcript; DEV shows it as "Vibe-coding a cryptid bureau on Sanity: the key moments".
