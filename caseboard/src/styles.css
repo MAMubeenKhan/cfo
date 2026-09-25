@@ -78,12 +78,13 @@ body { font-family: var(--font-sans); color: var(--ink); background: var(--paper
 .react-flow__handle.pin:hover { transform: scale(1.2); }
 .react-flow__handle.pin.connectionindicator { box-shadow: 0 0 0 4px rgba(255,255,255,.7), 0 3px 5px rgba(0,0,0,.45); }
 
-.string { fill: none; stroke: var(--string); stroke-width: 2.6; stroke-linecap: round; filter: drop-shadow(0 2px 1px rgba(0,0,0,.3)); }
-.string.proposed { stroke-dasharray: 7 6; animation: dash 1.2s linear infinite; }
-@keyframes dash { to { stroke-dashoffset: -26; } }
+/* Prefixed with .react-flow so these beat React Flow's own grey 1px edge style, which loads after this file. */
+.react-flow .react-flow__edge-path.string { fill: none; stroke: #d3200f; stroke-width: 4; stroke-linecap: round; opacity: 1; filter: drop-shadow(0 0 1px rgba(255,255,255,.7)) drop-shadow(0 2px 2px rgba(0,0,0,.4)); }
+.react-flow .react-flow__edge-path.string.proposed { stroke-dasharray: 9 7; animation: dash 1.2s linear infinite; }
+@keyframes dash { to { stroke-dashoffset: -32; } }
 .string-hit { fill: none; stroke: transparent; stroke-width: 18; cursor: pointer; }
-.string.sel { stroke-width: 4; }
-.string.enter { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw 1s ease-out forwards; }
+.react-flow .react-flow__edge-path.string.sel { stroke-width: 6; stroke: #ff2a14; }
+.react-flow .react-flow__edge-path.string.enter { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw 1s ease-out forwards; }
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
 .react-flow__controls { box-shadow: 0 2px 6px rgba(0,0,0,.3); }
@@ -122,4 +123,4 @@ body { font-family: var(--font-sans); color: var(--ink); background: var(--paper
   .cb-body { display: none; }
   .narrow { display: grid; place-items: center; text-align: center; padding: 40px 24px; font-family: var(--font-serif); font-size: 20px; }
 }
-@media (prefers-reduced-motion: reduce) { .string.proposed, .cb-live i, .string.enter { animation: none; } .string.enter { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .react-flow .react-flow__edge-path.string.proposed, .cb-live i, .react-flow .react-flow__edge-path.string.enter { animation: none; } .react-flow .react-flow__edge-path.string.enter { stroke-dashoffset: 0; } }

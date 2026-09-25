@@ -22,6 +22,7 @@ import {useState} from 'react'
 import {
   CATEGORY_LABEL,
   STATUS_LABEL,
+  STAGE_GROUPS,
   groupIndex,
   tiltFor,
   type BoardCase,
@@ -101,22 +102,28 @@ function Inner({cases, connections, pins, selectedId, selectedStringId, focusTok
   const visible = useMemo(() => cases.filter((c) => !c.hidden), [cases])
   const pinById = useMemo(() => new Map(pins.map((p) => [p.case, p])), [pins])
 
-  // Derive nodes from live data. Cards with no saved pin are laid out in columns by stage.
+  // Derive nodes from live data. Cards with no saved pin are laid out in columns by stage: each stage
+  // wraps into columns of at most ROWS cards, so a long "Closed" list spreads sideways instead of
+  // becoming one very tall strip that fits-to-view at a tiny zoom.
   useEffect(() => {
-    const perGroup: Record<number, number> = {}
+    const ROWS = 5
+    const counts = STAGE_GROUPS.map((_, gi) => visible.filter((c) => groupIndex(c.status) === gi).length)
+    const startCol: number[] = []
+    let acc = 0
+    counts.forEach((n, gi) => {
+      startCol[gi] = acc
+      acc += Math.max(1, Math.ceil(n / ROWS)) + 0.4 // a gap between stages
+    })
+    const seenInGroup: Record<number, number> = {}
     setNodes((prev) => {
       const prevById = new Map(prev.map((n) => [n.id, n]))
       return visible.map((c) => {
         const g = groupIndex(c.status)
-        const row = (perGroup[g] = (perGroup[g] ?? -1) + 1)
+        const idx = (seenInGroup[g] = (seenInGroup[g] ?? -1) + 1)
         const pin = pinById.get(c._id)
         const existing = prevById.get(c._id)
-        const position =
-          existing && dragging.current.has(c._id)
-            ? existing.position
-            : pin
-              ? {x: pin.x, y: pin.y}
-              : {x: 40 + g * (CARD_W + 60), y: 40 + row * (CARD_H + 30)}
+        const auto = {x: 40 + (startCol[g] + Math.floor(idx / ROWS)) * (CARD_W + 48), y: 40 + (idx % ROWS) * (CARD_H + 26)}
+        const position = existing && dragging.current.has(c._id) ? existing.position : pin ? {x: pin.x, y: pin.y} : auto
         return {id: c._id, type: 'polaroid', position, data: {c, selected: c._id === selectedId}, width: CARD_W, height: CARD_H, selected: c._id === selectedId} as CardNode
       })
     })

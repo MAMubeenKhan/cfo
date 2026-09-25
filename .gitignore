@@ -19,3 +19,10 @@ skills-lock.json
 # large media, kept out of git
 submission/video/
 submission/clips/
+
+# Video source audio (large / third-party licence): keep out of the repo
+voice.mp4
+*.mp3
+submission/NARRATION.md
+submission/YOUTUBE.md
+submission/youtube-thumbnail.png

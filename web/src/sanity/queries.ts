@@ -118,7 +118,7 @@ export const DOSSIER_QUERY = `*[${PUBLIC} && caseNumber == $caseNumber][0]{
   "verdict": verdict{outcome, note, filedAt, filedBy},
   "log": log[]{_key, at, actor, kind, message},
   "witness": witness->{codename, credibility, reportsCount, closedCounts},
-  "connections": *[_type == "connection" && status != "rejected" && (from._ref == ^._id || to._ref == ^._id)]{
+  "connections": *[_type == "connection" && status != "rejected" && (from._ref == ^._id || to._ref == ^._id) && from->hidden != true && to->hidden != true]{
     _id, reason, confidence, status, proposedBy,
     "other": select(from._ref == ^._id => to, from)->${CARD}
   }

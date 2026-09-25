@@ -103,3 +103,22 @@ Ran against the DEPLOYED stack with Playwright + axe + Lighthouse (scratch scrip
 
 ## 2026-09-25 12:14 — Demo video, hybrid
 - Public-site part recorded automatically with Playwright (real browser 1280x720, real report CFO-2026-0042 filed on the live site, injected cursor and captions, second take after fixing legibility, an early caption that was wrong, and pacing). ffmpeg from the imageio-ffmpeg wheel joins title card + recording + end card into an H.264 MP4 (2:24). Mubeen records the Case Board and Studio clips (they need his Sanity login); captions get added afterwards. Demo cases CFO-2026-0041 and 0042 stay visible until the final video exists, then get hidden.
+
+## 2026-09-25 14:26 - Late fixes found by looking (not yet committed)
+- **Hidden test cases leaked into a public dossier's "related files".** Cases I had hidden after testing still appeared as red-string neighbours. Deleted the test data and hardened the dossier query so a connection is dropped if either end is hidden (`web/src/sanity/queries.ts`).
+- **Case Board cards were tiny.** Auto-layout put each stage in one tall column, so fit-to-view zoomed far out. It now wraps each stage into columns of five (`caseboard/src/Corkboard.tsx`) and is redeployed.
+- **Studio map input showed a blank map.** The public site's map was fine (tile requests all 200), but the Studio input never set a MapLibre worker URL, which MapLibre 6 needs once bundled. Fixed by serving the worker from the Studio's `static/maplibre` folder and starting it through a blob module; Studio redeployed. Still to confirm by eye in the browser.
+
+## 2026-09-25 14:38 - Video assembled
+Final cut `submission/video/cryptid-field-office-demo.mp4` (3:52, 1080p): public-site part recorded by Playwright, then Case Board and Studio parts recorded from a real Chrome window by screen capture (ffmpeg gdigrab) with the mouse driven by a script. The recording is genuine: a red string was drawn (14 to 15 strings), CFO-2026-0042 was classified from the Case Board and the CLASSIFIED stamp landed live. Waiting time was cut and one stretch sped up 1.6x; captions were added afterwards. The video is gitignored (too big for the repo); it is uploaded to YouTube instead.
+
+## 2026-09-25 15:22 - Narration and music
+Mubeen recorded the voice-over in one take while watching the video (`voice.mp4`, audio used only). Music: "Mysterious Strange Things" by Yung Logos, looped with a crossfade. The mix ducks the music under speech (about 11 dB, music ends up about 18 dB below the voice) and lets it swell in the silences (about 6 dB below the voice), measured with ffmpeg loudness (EBU R128) on speech vs silence windows. Voice was high-passed, gently compressed and normalised to -16 LUFS. Final: `submission/video/cryptid-field-office-demo-narrated.mp4` (3:54, stereo). Note: the music track's licence is the uploader's, check the track page before publishing.
+
+- 2026-09-25 15:24 Music source confirmed by Mubeen: YouTube Audio Library (free for videos on YouTube; if the track says "Attribution required", copy its credit line into the YouTube description and the DEV post).
+
+## 2026-09-25 15:38 - Case Board strings made visible, clip re-recorded
+Red strings were grey and 1px in the recording because React Flow's own edge stylesheet loaded after ours and won. Fixed with a higher-specificity selector (caseboard/src/styles.css: 4px, #d3200f, glow + shadow; 6px when selected) and redeployed. Re-recorded the Case Board clip on CFO-2026-0041 with the same cut lengths as before, so the narration timing is unchanged (scene changes at 140.2 s, 203.0 s, 227.3 s in both versions). Final: submission/video/cryptid-field-office-demo-narrated-v2.mp4. Both demo cases 0041 and 0042 are now CLASSIFIED; hide them after the video is approved.
+
+## 2026-09-25 15:52 - Video published, demo cases hidden
+YouTube (Unlisted): https://youtu.be/xEti2uTE5eA, embedded in submission/SUBMISSION.md. The demo cases CFO-2026-0041 and 0042 (both CLASSIFIED) were set hidden=true; both now return 404 publicly and the public count is the 30 seeded cases. Still to do: commit/push, make the repo public, agent-session upload, publish the DEV post.

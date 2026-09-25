@@ -6,6 +6,16 @@ import {set, unset, type ObjectInputProps} from 'sanity'
 
 type Geopoint = {_type: 'geopoint'; lat: number; lng: number}
 
+// MapLibre 6 cannot find its own worker once bundled. Serve it from the Studio's /static folder and
+// start it through a tiny blob module, so it also works when the Studio is shown inside the Dashboard
+// (a different origin, where a plain cross-origin Worker would be refused).
+const WORKER_SRC = 'https://cryptid-field-office.sanity.studio/static/maplibre/maplibre-gl-worker.mjs'
+try {
+  maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([`import ${JSON.stringify(WORKER_SRC)};`], {type: 'text/javascript'})))
+} catch {
+  /* the map falls back to MapLibre's default worker */
+}
+
 const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'
 const DEFAULT_CENTER: [number, number] = [-98.5, 39.5]
 

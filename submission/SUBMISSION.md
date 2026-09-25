@@ -35,7 +35,9 @@ Try it in about a minute:
 
 The Studio and Case Board need a Sanity login, so the video and screenshots below show them. The Director's Desk gives you the same workflow power without one.
 
-**[VIDEO WALKTHROUGH: add the link or embed here]**
+{% embed https://youtu.be/xEti2uTE5eA %}
+
+The video shows the whole loop: a public report, live AI triage, the Director's Desk, then the Case Board and the Studio, which need a Sanity login and so are only shown here.
 
 ![The home page](submission/screenshot-1-home.png)
 ![A report, triaged by the Field Investigator](submission/screenshot-2-report-triaged.png)
