@@ -80,7 +80,7 @@ Useful commands: `npm run wf:recover` (start missing instances and settle open o
 ## Honest limitations
 
 * **Sanity Workflows is early access (0.x).** All `@sanity/workflow-*` packages are pinned to exactly `0.35.0`.
-* The rate limiter is in-memory, so it bounds abuse per server instance, not globally. The hard cap on cost is the daily AI budget.
+* Rate limiting is durable and global: counts live in Sanity as private documents (an id containing a dot is unreadable to the public), 5 reports an hour per caller and 40 an hour overall. There is no CAPTCHA; a honeypot, a minimum fill time and the daily AI budget (a kill switch lives in `Bureau settings`) back it up.
 * The daily recovery sweeper (`wf-sweep`, 04:00 UTC) needs an organisation-scoped Blueprints stack, which a project API token cannot create; it was created with an organisation owner's own login. `npm run wf:recover` does the same job on demand.
 * The Case Board and Studio need a Sanity login. The public site has no login, and the Director's Desk gives visitors the same workflow power.
 

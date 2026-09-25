@@ -29,5 +29,9 @@ export const handler = scheduledEventHandler(async ({context}) => {
       console.error(`Scheduled recovery failed for ${_id}: ${errorMessage(error)}`)
     }
   }
+  // Housekeeping: rate-limit counters are only useful for an hour; drop anything older than two days.
+  const cutoff = new Date(Date.now() - 2 * 86400_000).toISOString()
+  await client.delete({query: '*[_type == "rateLimit" && _updatedAt < $cutoff]', params: {cutoff}})
+
   if (instances.length > 0 && failed === instances.length) throw new Error('Scheduled recovery failed for every selected instance')
 })

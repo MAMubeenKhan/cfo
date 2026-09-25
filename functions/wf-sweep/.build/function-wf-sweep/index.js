@@ -47,6 +47,11 @@ var handler = scheduledEventHandler(async ({ context }) => {
 		failed += 1;
 		console.error(`Scheduled recovery failed for ${_id}: ${errorMessage(error)}`);
 	}
+	const cutoff = (/* @__PURE__ */ new Date(Date.now() - 1728e5)).toISOString();
+	await client.delete({
+		query: "*[_type == \"rateLimit\" && _updatedAt < $cutoff]",
+		params: { cutoff }
+	});
 	if (instances.length > 0 && failed === instances.length) throw new Error("Scheduled recovery failed for every selected instance");
 });
 //#endregion

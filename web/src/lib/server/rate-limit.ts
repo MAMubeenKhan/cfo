@@ -1,30 +1,36 @@
 import 'server-only'
 import {createHash} from 'node:crypto'
 import {headers} from 'next/headers'
+import {writeClient} from './clients'
 
 /**
- * In-memory sliding-window limiter. Honest limitation: each serverless instance has its own memory,
- * so this bounds abuse per instance, not globally. It is a speed bump, not a wall; the daily AI budget
- * in Bureau settings is the hard cap on cost.
+ * Durable, global rate limiting.
+ *
+ * The first version kept counts in each server's memory. A live test proved it useless on serverless
+ * hosting: eight reports from one connection all went through, because each request can land on a
+ * different instance. Counts now live in Sanity, in fixed one-hour windows, as documents whose _id
+ * contains a dot (`rl.<hash>.<window>`). Documents like that are PRIVATE in a public dataset: visitors
+ * cannot read them, only the server's token can.
+ *
+ * Fixed windows are coarse (a burst across an hour boundary gets two allowances) but simple, atomic
+ * (`inc` is a server-side increment) and cheap: two small writes per protected action.
  */
-const buckets = new Map<string, number[]>()
-const MAX_KEYS = 5000
-
-export function hit(key: string, limit: number, windowMs: number): {ok: boolean; retryAfterSec: number} {
-  const now = Date.now()
-  const recent = (buckets.get(key) ?? []).filter((t) => now - t < windowMs)
-  if (recent.length >= limit) {
-    return {ok: false, retryAfterSec: Math.max(1, Math.ceil((windowMs - (now - recent[0])) / 1000))}
-  }
-  recent.push(now)
-  buckets.set(key, recent)
-  if (buckets.size > MAX_KEYS) {
-    for (const [k, v] of buckets) {
-      if (v.every((t) => now - t >= windowMs)) buckets.delete(k)
-      if (buckets.size <= MAX_KEYS * 0.8) break
+export async function hit(key: string, limit: number, windowSec = 3600): Promise<{ok: boolean; retryAfterSec: number}> {
+  const windowIndex = Math.floor(Date.now() / (windowSec * 1000))
+  const id = `rl.${key}.${windowIndex}`
+  try {
+    await writeClient.createIfNotExists({_id: id, _type: 'rateLimit', count: 0})
+    const updated = await writeClient.patch(id).inc({count: 1}).commit<{count: number}>()
+    if (updated.count > limit) {
+      const retryAfterSec = Math.max(1, (windowIndex + 1) * windowSec - Math.floor(Date.now() / 1000))
+      return {ok: false, retryAfterSec}
     }
+    return {ok: true, retryAfterSec: 0}
+  } catch (error) {
+    // If the limiter itself is down, fail open: the daily AI budget still caps the cost.
+    console.error('rate limiter unavailable', error)
+    return {ok: true, retryAfterSec: 0}
   }
-  return {ok: true, retryAfterSec: 0}
 }
 
 /** A salted hash of the caller's IP. The address itself is never stored or logged. */

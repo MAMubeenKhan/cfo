@@ -89,6 +89,8 @@ I would rather show the dead ends than pretend there were none.
 * **Vercel served 404 for everything:** the CLI created the project with no framework preset, so the build passed but the edge served nothing. One API call to set `framework: nextjs` and a redeploy fixed it. Deployment Protection was also putting a login in front of the site.
 * **The AI was too harsh.** In the live test, a credible sighting *with a photo and a footprint* scored 68, just under the 70 "investigate" bar. I added a scoring guide to the prompt ("a submitted photo or footprint counts as physical evidence"; "vague is not false: when in doubt, score 20-49 so a person can look") and redeployed. The same report then opened an investigation, and the Cross-Referencer proposed 3 real related files.
 * **Things the live test found** that no type-checker would have: a missing case returned HTTP 200 (a soft 404) because of a page-wide loading skeleton; the map threw "Worker failed to load" because MapLibre 6's worker files can't be bundled by Next; the map opened on Scotland instead of framing all cases; my evidence photos were bad at first sight (a footprint that looked like a snowman, a triangle invisible on a dark sky), which I only caught by *looking* at them.
+* **My first rate limiter was useless, and only a live test showed it.** I had built it in server memory and even documented it as a known limit. Then I filed eight reports at once from one connection with the limit set to five: all eight went through, because serverless hosting spreads requests over many servers. I rebuilt it as counters stored in Sanity as private documents (an id with a dot in it is unreadable to the public). The same test then accepted five and refused three, and an anonymous query for those counters returns nothing.
+* **Vercel blocked a deployment** once I started committing to git: the CLI attached my commit author, which was not on the Vercel team. Deploying from a copy of the folder without git history fixes it (`scripts/deploy-web.sh`).
 * **Speed:** the case page scored 57 on a throttled phone because a 290 KB map library loaded below the fold. Mounting the map only when it scrolls into view took it to 93. Accessibility is 100 on every page; the search-engine score stays near 66 only because Vercel adds a `noindex` header to its free addresses.
 
 ### The App SDK and Workflows, honestly
@@ -98,7 +100,7 @@ I would rather show the dead ends than pretend there were none.
 
 ### What is honestly not there
 
-* The in-memory rate limiter bounds abuse per server instance, not globally. The hard cap on cost is a daily AI budget and a kill switch in `Bureau settings`.
+* No CAPTCHA. Abuse is limited by a durable rate limit (5 reports an hour per visitor, 40 overall), a honeypot, a minimum fill time, and a daily AI budget with a kill switch in `Bureau settings`.
 * The Case Board is desktop-only, by design.
 
 ## Sanity Project Details

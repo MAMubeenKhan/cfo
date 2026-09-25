@@ -76,9 +76,12 @@ export async function fileReport(_prev: FormState, formData: FormData): Promise<
   if (existing?.caseNumber) redirect(`/report/filed/${existing.caseNumber}`)
 
   const who = await callerId()
-  const limit = hit(`report:${who}`, 5, 3_600_000)
-  if (!limit.ok) {
-    return fail(`Several reports have been filed from this connection in the last hour. Please try again in ${Math.ceil(limit.retryAfterSec / 60)} minutes.`)
+  // Per caller (5 an hour) and across all visitors (40 an hour): durable, shared by every server instance.
+  const limit = await hit(`report-${who}`, 5)
+  const crowd = limit.ok ? await hit('report-all', 40) : limit
+  if (!limit.ok || !crowd.ok) {
+    const wait = Math.ceil(Math.max(limit.retryAfterSec, crowd.retryAfterSec) / 60)
+    return fail(limit.ok ? `The Bureau is very busy right now. Please try again in ${wait} minutes.` : `Several reports have been filed from this connection in the last hour. Please try again in ${wait} minutes.`)
   }
 
   const files = formData.getAll('photos').filter((f): f is File => f instanceof File && f.size > 0)
@@ -195,7 +198,8 @@ export async function deskDecision(input: {caseId: string; action: string; note?
 
   const who = await callerId()
   const perHour = settings?.publicDeskHourlyLimit ?? 10
-  if (!hit(`desk:${who}`, perHour, 3_600_000).ok || !hit('desk:all', perHour * 6, 3_600_000).ok) {
+  const mine = await hit(`desk-${who}`, perHour)
+  if (!mine.ok || !(await hit('desk-all', perHour * 6)).ok) {
     return {ok: false, message: 'The desk has processed a lot of files in the last hour. Please try again later.'}
   }
 
