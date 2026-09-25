@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+.sanity
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+*.env
+SANITY_API.*
+
+.agents/
+.claude/
+skills-lock.json
+*.log
