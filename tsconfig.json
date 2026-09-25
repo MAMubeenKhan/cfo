@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023", "dom"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["node"]
+  },
+  "include": ["workflow", "scripts/**/*.ts", "functions", "seed", "sanity.workflow.ts", "sanity.blueprint.ts"]
+}

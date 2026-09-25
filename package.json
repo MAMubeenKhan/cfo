@@ -1,0 +1,31 @@
+{
+  "name": "cryptid-field-office",
+  "private": true,
+  "type": "module",
+  "description": "Workflow, Functions and scripts for the Cryptid Field Office. Studio, web and caseboard are separate projects.",
+  "scripts": {
+    "seed:build": "tsx scripts/build-seed.ts",
+    "seed:photos": "python scripts/make_evidence_photos.py",
+    "seed:workflows": "tsx --env-file=.env scripts/seed-workflows.ts",
+    "wf:check": "sanity-workflows deploy --check",
+    "wf:deploy": "sanity-workflows deploy",
+    "wf:recover": "tsx --env-file=.env scripts/recover.ts",
+    "wf:export": "tsx scripts/export-definition.ts",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "@sanity/blueprints": "^0.27.0",
+    "@sanity/cli-core": "^3.8.0",
+    "@sanity/client": "^8.7.0",
+    "@sanity/functions": "^1.8.0",
+    "@sanity/workflow-blueprint": "0.35.0",
+    "@sanity/workflow-cli": "0.35.0",
+    "@sanity/workflow-engine": "0.35.0"
+  }
+}
