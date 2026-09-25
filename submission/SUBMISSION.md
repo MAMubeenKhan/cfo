@@ -2,7 +2,7 @@
 DEV post for the Sanity Challenge, Path Two. Paste everything below the tag line into the DEV editor.
 Tags to select: devchallenge, sanitychallenge, sanity, ai
 Cover image: submission/cover.png (1000 x 420)
-Fill in the three [BRACKETED] items before publishing: repo link, video link, agent session embed.
+Only one [BRACKETED] item is left: the agent session embed. Images use public GitHub links so DEV can load them.
 -->
 
 *This is a submission for the [Sanity Challenge, Path Two: Vibe-Code Something Strange](https://dev.to/challenges/sanity-2026-09-16)*
@@ -39,15 +39,17 @@ The Studio and Case Board need a Sanity login, so the video and screenshots belo
 
 The video shows the whole loop: a public report, live AI triage, the Director's Desk, then the Case Board and the Studio, which need a Sanity login and so are only shown here.
 
-![The home page](submission/screenshot-1-home.png)
-![A report, triaged by the Field Investigator](submission/screenshot-2-report-triaged.png)
-![A case file](submission/screenshot-3-case-file.png)
-![The map and case list](submission/screenshot-4-map-and-list.png)
-![The Director's Desk](submission/screenshot-5-directors-desk.png)
+![The home page](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-1-home.png)
+![A report, triaged by the Field Investigator](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-2-report-triaged.png)
+![A case file](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-3-case-file.png)
+![The map and case list](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-4-map-and-list.png)
+![The Director's Desk](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-5-directors-desk.png)
+![Dark mode](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-6-dark-mode.png)
+![On a phone](https://raw.githubusercontent.com/MAMubeenKhan/cfo/main/submission/screenshot-7-phone.png)
 
 ## Code
 
-**[REPO LINK: https://github.com/MAMubeenKhan/cfo, must be public before publishing]**
+**https://github.com/MAMubeenKhan/cfo**
 
 The repo includes `PLAN.md` (the full runbook I had Claude write *before* any code) and `BUILDLOG.md` (an honest day-by-day log, including everything that broke).
 
