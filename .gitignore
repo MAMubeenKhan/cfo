@@ -15,3 +15,7 @@ SANITY_API.*
 .claude/
 skills-lock.json
 *.log
+
+# large media, kept out of git
+submission/video/
+submission/clips/

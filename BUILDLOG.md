@@ -100,3 +100,6 @@ Ran against the DEPLOYED stack with Playwright + axe + Lighthouse (scratch scrip
 - Vercel BLOCKED a deployment (readyStateReason: "the commit author doesn't have permission to create deployments"). Cause: the CLI reads git metadata, and my commits use the GitHub noreply address, which is not a Vercel team member. Fix: deploy from a git-free copy (scripts/deploy-web.sh).
 - Test hygiene: 20 more test reports hidden; limiter counters cleared so the video can be filmed without being rate limited.
 - STILL NOT TESTED: the Case Board with two windows at once (needs a Sanity login), a real screen reader, the wf-sweep on its own schedule (first run 04:00 UTC).
+
+## 2026-09-25 12:14 — Demo video, hybrid
+- Public-site part recorded automatically with Playwright (real browser 1280x720, real report CFO-2026-0042 filed on the live site, injected cursor and captions, second take after fixing legibility, an early caption that was wrong, and pacing). ffmpeg from the imageio-ffmpeg wheel joins title card + recording + end card into an H.264 MP4 (2:24). Mubeen records the Case Board and Studio clips (they need his Sanity login); captions get added afterwards. Demo cases CFO-2026-0041 and 0042 stay visible until the final video exists, then get hidden.
