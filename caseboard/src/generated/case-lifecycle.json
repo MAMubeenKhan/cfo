@@ -1,0 +1,531 @@
+{
+  "name": "case-lifecycle",
+  "title": "Case lifecycle",
+  "description": "Takes a sighting report from intake, through AI triage and a human decision, to a filed verdict.",
+  "initialStage": "intake",
+  "fields": [
+    {
+      "type": "subject",
+      "name": "subject",
+      "title": "Case",
+      "description": "The case file this instance moves through the stages.",
+      "required": true,
+      "initialValue": {
+        "type": "input"
+      }
+    },
+    {
+      "type": "actor",
+      "name": "director",
+      "title": "Director"
+    },
+    {
+      "type": "actor",
+      "name": "investigator",
+      "title": "Investigator"
+    },
+    {
+      "type": "string",
+      "name": "decision",
+      "title": "Director decision"
+    },
+    {
+      "type": "string",
+      "name": "verdict",
+      "title": "Verdict"
+    },
+    {
+      "type": "string",
+      "name": "verdictNote",
+      "title": "Verdict note"
+    }
+  ],
+  "stages": [
+    {
+      "name": "intake",
+      "title": "Intake and triage",
+      "description": "The Field Investigator reads the report and scores its plausibility.",
+      "activities": [
+        {
+          "name": "triage",
+          "title": "Triage the report",
+          "actions": [
+            {
+              "name": "analyze",
+              "title": "Field Investigator reviews the report",
+              "when": "true",
+              "effects": [
+                {
+                  "name": "agent-triage",
+                  "bindings": {
+                    "subject": "$fields.subject._id"
+                  },
+                  "outputs": [
+                    {
+                      "type": "boolean",
+                      "name": "needsHuman"
+                    },
+                    {
+                      "type": "boolean",
+                      "name": "likelyHoax"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "triaged",
+              "title": "Triage complete",
+              "when": "$effectStatus['agent-triage'] == 'done'",
+              "ops": [
+                {
+                  "type": "status.set",
+                  "activity": "triage",
+                  "status": "done"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "name": "triage-failed",
+          "title": "Triage failed: send to the Director",
+          "to": "review",
+          "when": "$effectStatus['agent-triage'] == 'failed'"
+        },
+        {
+          "name": "auto-close",
+          "title": "Close at triage",
+          "to": "filing",
+          "when": "$allActivitiesDone && $effects['agent-triage'].likelyHoax && !$effects['agent-triage'].needsHuman"
+        },
+        {
+          "name": "to-review",
+          "title": "Send to the Director's review",
+          "to": "review",
+          "when": "$allActivitiesDone && $effects['agent-triage'].needsHuman"
+        },
+        {
+          "name": "to-investigation",
+          "title": "Open an investigation",
+          "to": "investigation",
+          "when": "$allActivitiesDone"
+        }
+      ]
+    },
+    {
+      "name": "review",
+      "title": "Director's review",
+      "description": "A person decides whether the case is worth investigating.",
+      "activities": [
+        {
+          "name": "decide",
+          "title": "Decide the case",
+          "actions": [
+            {
+              "name": "mirror",
+              "title": "Record the stage on the case file",
+              "when": "true",
+              "effects": [
+                {
+                  "name": "mirror-review",
+                  "bindings": {
+                    "subject": "$fields.subject._id"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "open-investigation",
+              "title": "Open an investigation",
+              "ops": [
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "decision"
+                  },
+                  "value": {
+                    "type": "literal",
+                    "value": "investigate"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "director"
+                  },
+                  "value": {
+                    "type": "actor"
+                  }
+                },
+                {
+                  "type": "status.set",
+                  "activity": "decide",
+                  "status": "done"
+                }
+              ]
+            },
+            {
+              "name": "debunk",
+              "title": "Debunk and close",
+              "params": [
+                {
+                  "type": "string",
+                  "name": "note",
+                  "title": "Grounds for closing",
+                  "required": true
+                }
+              ],
+              "ops": [
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "decision"
+                  },
+                  "value": {
+                    "type": "literal",
+                    "value": "close"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdict"
+                  },
+                  "value": {
+                    "type": "literal",
+                    "value": "debunked"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdictNote"
+                  },
+                  "value": {
+                    "type": "param",
+                    "param": "note"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "director"
+                  },
+                  "value": {
+                    "type": "actor"
+                  }
+                },
+                {
+                  "type": "status.set",
+                  "activity": "decide",
+                  "status": "done"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "name": "to-investigation",
+          "title": "Open an investigation",
+          "to": "investigation",
+          "when": "$allActivitiesDone && $fields.decision == 'investigate'"
+        },
+        {
+          "name": "to-filing",
+          "title": "Close the case",
+          "to": "filing",
+          "when": "$allActivitiesDone && $fields.decision == 'close'"
+        }
+      ]
+    },
+    {
+      "name": "investigation",
+      "title": "Field investigation",
+      "description": "The Cross-Referencer looks for related files while an investigator works the case.",
+      "activities": [
+        {
+          "name": "cross-reference",
+          "title": "Cross-reference related files",
+          "actions": [
+            {
+              "name": "run",
+              "title": "Cross-Referencer searches the files",
+              "when": "true",
+              "effects": [
+                {
+                  "name": "mirror-investigation",
+                  "bindings": {
+                    "subject": "$fields.subject._id"
+                  }
+                },
+                {
+                  "name": "agent-crossref",
+                  "bindings": {
+                    "subject": "$fields.subject._id"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "done",
+              "title": "Cross-reference complete",
+              "when": "$effectStatus['agent-crossref'] == 'done'",
+              "ops": [
+                {
+                  "type": "status.set",
+                  "activity": "cross-reference",
+                  "status": "done"
+                }
+              ]
+            },
+            {
+              "name": "skip-on-failure",
+              "title": "Cross-reference unavailable: continue without it",
+              "when": "$effectStatus['agent-crossref'] == 'failed'",
+              "ops": [
+                {
+                  "type": "status.set",
+                  "activity": "cross-reference",
+                  "status": "done"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "field-report",
+          "title": "File the field report",
+          "actions": [
+            {
+              "name": "classify",
+              "title": "Classify: on record as unexplained",
+              "params": [
+                {
+                  "type": "string",
+                  "name": "note",
+                  "title": "Note for the file",
+                  "required": true
+                }
+              ],
+              "ops": [
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdict"
+                  },
+                  "value": {
+                    "type": "literal",
+                    "value": "classified"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdictNote"
+                  },
+                  "value": {
+                    "type": "param",
+                    "param": "note"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "investigator"
+                  },
+                  "value": {
+                    "type": "actor"
+                  }
+                },
+                {
+                  "type": "status.set",
+                  "activity": "field-report",
+                  "status": "done"
+                }
+              ]
+            },
+            {
+              "name": "debunk",
+              "title": "Debunk: explained",
+              "params": [
+                {
+                  "type": "string",
+                  "name": "note",
+                  "title": "Note for the file",
+                  "required": true
+                }
+              ],
+              "ops": [
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdict"
+                  },
+                  "value": {
+                    "type": "literal",
+                    "value": "debunked"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdictNote"
+                  },
+                  "value": {
+                    "type": "param",
+                    "param": "note"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "investigator"
+                  },
+                  "value": {
+                    "type": "actor"
+                  }
+                },
+                {
+                  "type": "status.set",
+                  "activity": "field-report",
+                  "status": "done"
+                }
+              ]
+            },
+            {
+              "name": "inconclusive",
+              "title": "Inconclusive",
+              "params": [
+                {
+                  "type": "string",
+                  "name": "note",
+                  "title": "Note for the file",
+                  "required": true
+                }
+              ],
+              "ops": [
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdict"
+                  },
+                  "value": {
+                    "type": "literal",
+                    "value": "inconclusive"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "verdictNote"
+                  },
+                  "value": {
+                    "type": "param",
+                    "param": "note"
+                  }
+                },
+                {
+                  "type": "field.set",
+                  "target": {
+                    "scope": "workflow",
+                    "field": "investigator"
+                  },
+                  "value": {
+                    "type": "actor"
+                  }
+                },
+                {
+                  "type": "status.set",
+                  "activity": "field-report",
+                  "status": "done"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "name": "to-filing",
+          "title": "File the verdict",
+          "to": "filing",
+          "when": "$allActivitiesDone"
+        }
+      ]
+    },
+    {
+      "name": "filing",
+      "title": "Filing",
+      "description": "The Bureau stamps the verdict and updates the witness record.",
+      "activities": [
+        {
+          "name": "file",
+          "title": "Stamp and file",
+          "actions": [
+            {
+              "name": "stamp",
+              "title": "Stamp the case",
+              "when": "true",
+              "effects": [
+                {
+                  "name": "file-verdict",
+                  "bindings": {
+                    "subject": "$fields.subject._id",
+                    "verdict": "$fields.verdict",
+                    "note": "$fields.verdictNote",
+                    "directorId": "$fields.director.id",
+                    "investigatorId": "$fields.investigator.id"
+                  }
+                }
+              ]
+            },
+            {
+              "name": "filed",
+              "title": "Filed",
+              "when": "$effectStatus['file-verdict'] == 'done'",
+              "ops": [
+                {
+                  "type": "status.set",
+                  "activity": "file",
+                  "status": "done"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "name": "to-closed",
+          "title": "Close the file",
+          "to": "closed",
+          "when": "$allActivitiesDone"
+        }
+      ]
+    },
+    {
+      "name": "closed",
+      "title": "Closed",
+      "description": "The case is filed. Nothing more to do."
+    }
+  ]
+}
